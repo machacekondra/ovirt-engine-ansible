@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    auth:
+      url: http://ondra.local/ovirt-engine/api
+      username: admin@internal
+      password: 1234567
+
+  tasks:
+  - name: Get datacenter dcx
+    ovirt_data_centers:
+      auth: "{{ auth }}"
+      method: list
+      parameters:
+        search: "name=dcx"
+    register: dcx
+
+  - name: Update dc
+    ovirt_data_centers:
+      auth: "{{ auth }}"
+      method: update
+      path: "{{ dcx.data_center[0].href }}"
+      parameters:
+        data_center:
+          name: dcy
+    when: dcx.error is undefined

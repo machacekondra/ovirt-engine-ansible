@@ -1,0 +1,9 @@
+= oVirt Ansible
+
+== Introduction
+
+The oVirt Ansible is a Python package that simplifies automation of oVirt.
+
+IMPORTANT: This document describes how to generate, build and test the
+Ansible modules. If you are interested in how to use it read the `README.adoc`
+file in the `ansible` directory instead.

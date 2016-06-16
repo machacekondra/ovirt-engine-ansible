@@ -1,0 +1,29 @@
+= oVirt Engine Ansible
+
+== Introduction
+
+This project contains the Ansible modules for oVirt.
+
+== Development
+
+If you want to setup development environment please follow these steps:
+
+Install ansible:
+
+ # yum install -y ansible
+
+Clone git project:
+
+ # git clone git@github.com:machacekondra/ovirt-engine-ansible.git ~/workspace/ovirt-engine-ansible
+
+Symlink oVirt REST helper module to ansible module_utils:
+
+  # ln -s ~/workspace/ovirt-engine-ansible/ansible/lib/ovirt.py /usr/lib/python2.7/site-packages/ansible/module_utils/
+
+Add generated modules to ansible module path:
+
+  # export ANSIBLE_LIBRARY=$ANSIBLE_LIBRARY:~/workspace/ovirt-engine-ansible/ansible
+
+Run some playbook from examples:
+
+ # ansible-playbook -i "localhost," -c local ~/workspace/ovirt-engine-ansible/examples/update_dc.yml

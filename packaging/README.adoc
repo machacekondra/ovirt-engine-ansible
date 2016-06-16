@@ -1,0 +1,12 @@
+= oVirt Ansible Packaging
+
+== Introduction
+
+This directory contains the files required to package the oVirt ansible
+modules for packaging systems other than the Python standard packaging system.
+
+== RPM
+
+To build the RPM simply run the `build.sh` script. It will download the
+source file from https://pypi.python.org/pypi[PyPI] and then will
+package it.

@@ -1,0 +1,47 @@
+%global tar_version @TAR_VERSION@
+
+Name: ovirt-engine-ansible
+Summary: Ansible modules for oVirt
+Version: @RPM_VERSION@
+Release: @RPM_RELEASE@
+Group: Development/Languages
+License: ASL 2.0
+URL: http://ovirt.org
+Source: @TAR_URL@
+
+BuildRequires: python2-devel
+
+Requires: ansible
+Requires: python
+Requires: python-pycurl
+Requires: python-six
+
+%description
+This package contains ansible modules for oVirt.
+
+%prep
+%setup -c -q
+
+%build
+
+%install
+# Clean buildroot
+rm -rf %{buildroot}
+
+# Create directories
+mkdir -p %{buildroot}%{_datadir}/ansible/
+mkdir -p %{buildroot}/%{python2_sitelib}/ansible/module_utils/
+
+# Copy needed files
+cp -a ovirt-engine-ansible/ %{buildroot}%{_datadir}/ansible/
+cp lib/ovirt.py* %{buildroot}/%{python2_sitelib}/ansible/module_utils/
+
+%files
+%doc README.adoc
+%license LICENSE.txt
+%{_datadir}/ansible/ovirt-engine-ansible/
+%{python2_sitelib}/ansible/module_utils/ovirt.py*
+
+%changelog
+* Mon Jun 27 2016 Ondra Machacek <omachace@redhat.com> - 1.0.0-0
+- Initial build

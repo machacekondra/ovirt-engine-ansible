@@ -1,0 +1,82 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    url: http://ondra.local/ovirt-engine/api
+    username: admin@internal
+    password: 1234567
+
+  # This task will return ovirt_auth fact, used later for authentication
+  tasks:
+  - name: Obtain SSO token
+    ovirt_auth:
+      url: "{{ url }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+
+  - name: Create vm
+    ovirt_vms:
+      auth: "{{ ovirt_auth }}"
+      method: add
+      parameters:
+        vm:
+          name: test_vm
+          template:
+            name: Blank
+          cluster:
+            name: Default
+    register: add_vm
+
+  - name: Create disk
+    ovirt_disks:
+      auth: "{{ ovirt_auth }}"
+      method: add
+      parameters:
+        disk:
+          name: test_vm_disk
+          provisioned_size: 1073741824
+          format: raw
+          interface: virtio
+          storage_domains:
+            storage_domain:
+              - name: om03
+    when: add_vm|succeeded and add_vm.error is undefined
+    register: add_disk
+
+  - name: List disk
+    ovirt_disks:
+      auth: "{{ ovirt_auth }}"
+      method: list
+      parameters:
+        search: "id={{ add_disk.disk.id }}"
+    register: list_disk
+    delay: 5
+    retries: 5
+    until: list_disk.disk[0].status == "ok"
+    when:  not add_disk|skipped and add_disk.error is undefined
+
+  - name: Attach disk to vm
+    ovirt_vm_disks:
+      auth: "{{ ovirt_auth }}"
+      method: add
+      path: "{{ add_vm.vm.href }}"
+      parameters:
+        disk:
+          id: "{{ add_disk.disk.id }}"
+    when:  not add_disk|skipped and add_disk.error is undefined
+    register: attach
+
+  - name: Activate vm disk
+    ovirt_vm_disks:
+      auth: "{{ ovirt_auth }}"
+      method: activate
+      path: "{{ attach.disk.href }}"
+    when: not attach|skipped and attach.error is undefined
+    register: activate_disk
+
+  - name: Start vm
+    ovirt_vms:
+      auth: "{{ ovirt_auth }}"
+      method: start
+      path: "{{ add_vm.vm.href }}"
+    when: not activate_disk|skipped and activate_disk.error is undefined

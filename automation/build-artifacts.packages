@@ -1,0 +1,13 @@
+gcc
+git
+java-1.8.0-openjdk-devel
+maven
+python
+python-devel
+python-flake8
+python-nose
+python-pycurl
+python-six
+python-wheel
+rpm-build
+rpmdevtools
