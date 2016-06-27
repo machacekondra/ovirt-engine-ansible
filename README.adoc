@@ -7,3 +7,33 @@ The oVirt Ansible is a Python package that simplifies automation of oVirt.
 IMPORTANT: This document describes how to generate, build and test the
 Ansible modules. If you are interested in how to use it read the `README.adoc`
 file in the `ansible` directory instead.
+
+== Building
+
+oVirt ansible modules does not depend on any library, so the only package you will
+need in order to build ansible modules is python-devel. To install with the `yum`
+package manager you will need to do the following:
+
+  # yum -y install python-devel
+
+Most of the source code of the oVirt ansible modules are automatically generated
+from the API model.
+
+The code generator is a Java program that resides in the `generator`
+directory. This Java program will get the API model and the metamodel
+artifacts from the available Maven repositories. To build and run it use
+the following commands:
+
+  $ git clone git@github.com:machacekondra/ovirt-engine-ansible.git
+  $ mvn package
+
+This will build the code generator, run it to generate the modules for the
+version of the API that corresponds to the branch of the oVirt ansible that
+you are using.
+
+If you need to generate it for a different version of the API then you
+can use the `model.version` property. For example, if you need to
+generate the modules for version `4.1.0` of the API you can use this
+command:
+
+  $ mvn package -Dmodel.version=4.1.0

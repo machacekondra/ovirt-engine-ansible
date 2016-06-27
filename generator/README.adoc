@@ -1,5 +1,5 @@
-= oVirt Engine Ansible Generator
+= oVirt Engine Ansible Modules Generator
 
 == Introduction
 
-This project contains the code generator for the oVirt Ansible.
+This project contains the code generator for the oVirt Ansible modules.

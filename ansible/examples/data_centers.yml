@@ -19,8 +19,8 @@
   - name: Update dc
     ovirt_data_centers:
       auth: "{{ auth }}"
+      service: "{{ dcx.data_center[0].href }}"
       method: update
-      path: "{{ dcx.data_center[0].href }}"
       parameters:
         data_center:
           name: dcy

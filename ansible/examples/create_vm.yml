@@ -58,8 +58,8 @@
   - name: Attach disk to vm
     ovirt_vm_disks:
       auth: "{{ ovirt_auth }}"
+      service: "{{ add_vm.vm.href }}"
       method: add
-      path: "{{ add_vm.vm.href }}"
       parameters:
         disk:
           id: "{{ add_disk.disk.id }}"
@@ -69,14 +69,15 @@
   - name: Activate vm disk
     ovirt_vm_disks:
       auth: "{{ ovirt_auth }}"
+      service: "{{ attach.disk.href }}"
       method: activate
-      path: "{{ attach.disk.href }}"
+
     when: not attach|skipped and attach.error is undefined
     register: activate_disk
 
   - name: Start vm
     ovirt_vms:
       auth: "{{ ovirt_auth }}"
+      service: "{{ add_vm.vm.href }}"
       method: start
-      path: "{{ add_vm.vm.href }}"
     when: not activate_disk|skipped and activate_disk.error is undefined

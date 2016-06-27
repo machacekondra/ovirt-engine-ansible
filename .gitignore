@@ -2,5 +2,10 @@
 *iml
 target/
 *.tar.gz
+*.retry
 exported-artifacts/
 settings.xml
+docs/_modules/*
+docs/_build/
+ansible/ovirt-engine-ansible/*
+!ansible/ovirt-engine-ansible/ovirt_auth

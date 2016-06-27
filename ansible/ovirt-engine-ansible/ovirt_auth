@@ -51,7 +51,7 @@ options:
                certificate presented by the server will be verified using these CA
                certificates. If C(ca_file) parameter is not set, system wide
                CA certificate store is used."
-   timeout:
+    timeout:
         required: False
         description:
             - "The maximum total time to wait for the response, in

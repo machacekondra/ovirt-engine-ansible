@@ -157,12 +157,12 @@ public class ModulesGenerator implements PythonGenerator {
 
     private void generateParametersDocumentation(Service service) {
         buffer.startBlock();
-        buffer.addLine(  "path:");
+        buffer.addLine(  "service:");
         buffer.startBlock();
         buffer.addLine(    "required: false");
         buffer.addLine(    "description:");
         buffer.startBlock();
-        buffer.addLine(      "- \"URL path of the entity we want to work with\"");
+        buffer.addLine(      "- \"URL path of the service we want to work with, usually something like I(/vms/123/disks/456).\"");
         buffer.endBlock();
         buffer.endBlock();
         buffer.addLine(  "parameters:");
@@ -180,6 +180,10 @@ public class ModulesGenerator implements PythonGenerator {
     }
 
     private void generateMethodDocumentation(Method method) {
+        if (method.parameters().filter(Parameter::isIn).count() == 0) {
+            return;
+        }
+
         buffer.addLine("- \" C(%s) parameters:\"", pythonNames.getMemberStyleName(method.getName()));
         method.parameters()
             .filter(Parameter::isIn)
@@ -187,7 +191,7 @@ public class ModulesGenerator implements PythonGenerator {
                 parameter -> {
                     if (parameter.getType() instanceof StructType) {
                         buffer.addLine(
-                            "- \". I(%s)[dict] - U(%s%s).\"",
+                            "- \"** I(%s)[dict] - U(%s%s).\"",
                             schemaNames.getSchemaTagName(parameter.getName()),
                             DOC_URL,
                             parameter.getName()
@@ -195,7 +199,7 @@ public class ModulesGenerator implements PythonGenerator {
                     }
                     else {
                         buffer.addLine(
-                            "- \". I(%s)[%s] - %s\"",
+                            "- \"** I(%s)[%s] - %s\"",
                             schemaNames.getSchemaTagName(parameter.getName()),
                             parameter.getType().getName(),
                             parameter.getDoc() != null && parameter.getDoc().length() < 200 ? parameter.getDoc() : ""
@@ -231,17 +235,17 @@ public class ModulesGenerator implements PythonGenerator {
         buffer.addLine(    "description:");
         buffer.startBlock();
         buffer.addLine(      "- \"Dictionary with values needed to create HTTP connection to oVirt:\"");
-        buffer.addLine(      "- \".. C(username)[I(required)] - The name of the user, something like `I(admin@internal)`.\"");
-        buffer.addLine(      "- \".. C(password)[I(required)] - The password of the user.\"");
-        buffer.addLine(      "- \".. C(url)[I(required)] - A string containing the base URL of the server, usually\"");
-        buffer.addLine(      "- \"...   something like `I(https://server.example.com/ovirt-engine/api)`.\"");
-        buffer.addLine(      "- \".. C(sso_token) - SSO token to be used instead of login with username/password.\"");
-        buffer.addLine(      "- \".. C(insecure) - A boolean flag that indicates if the server TLS\"");
-        buffer.addLine(      "- \"...  certificate and host name should be checked.\"");
-        buffer.addLine(      "- \".. C(ca_file) - A PEM file containing the trusted CA certificates. The\"");
-        buffer.addLine(      "- \"...  certificate presented by the server will be verified using these CA\"");
-        buffer.addLine(      "- \"...  certificates. If `C(ca_file)` parameter is not set, system wide\"");
-        buffer.addLine(      "- \"...  CA certificate store is used.\"");
+        buffer.addLine(      "- \"** C(username)[I(required)] - The name of the user, something like `I(admin@internal)`.\"");
+        buffer.addLine(      "- \"** C(password)[I(required)] - The password of the user.\"");
+        buffer.addLine(      "- \"** C(url)[I(required)] - A string containing the base URL of the server, usually");
+        buffer.addLine(      "something like `I(https://server.example.com/ovirt-engine/api)`.\"");
+        buffer.addLine(      "- \"** C(sso_token) - SSO token to be used instead of login with username/password.\"");
+        buffer.addLine(      "- \"** C(insecure) - A boolean flag that indicates if the server TLS");
+        buffer.addLine(      "certificate and host name should be checked.\"");
+        buffer.addLine(      "- \"** C(ca_file) - A PEM file containing the trusted CA certificates. The");
+        buffer.addLine(      "certificate presented by the server will be verified using these CA");
+        buffer.addLine(      "certificates. If `C(ca_file)` parameter is not set, system wide");
+        buffer.addLine(      "CA certificate store is used.\"");
         buffer.endBlock();
         buffer.endBlock();
         buffer.endBlock();
@@ -261,7 +265,7 @@ public class ModulesGenerator implements PythonGenerator {
                 .collect(joining(", "))
         );
         buffer.addLine("auth=dict(required=True, type='dict'),");
-        buffer.addLine("path=dict(required=False, type='str', default=''),");
+        buffer.addLine("service=dict(required=False, type='str', default=''),");
         buffer.addLine("parameters=dict(required=False, type='dict', default=dict()),");
         buffer.endBlock();
         buffer.addLine(")");
@@ -286,7 +290,7 @@ public class ModulesGenerator implements PythonGenerator {
         buffer.startBlock();
         buffer.addLine("method = module.params.pop('method')");
         buffer.addLine(
-            "ret = getattr(sys.modules[__name__], method)(connection, module.params['path'], **module.params.pop('parameters'))"
+            "ret = getattr(sys.modules[__name__], method)(connection, module.params['service'], **module.params.pop('parameters'))"
         );
         buffer.addLine("module.exit_json(**ret)");
         buffer.endBlock();
