@@ -84,7 +84,7 @@ limitations under the License.
               <arguments>
                 <mainClass>org.ovirt.ansible.Tool</mainClass>
                 <argument>--model=${project.basedir}/target/model.jar</argument>
-                <argument>--out=${project.basedir}/ovirt-engine-ansible</argument>
+                <argument>--out=${project.basedir}/ovirt-engine-ansible4</argument>
               </arguments>
               <includePluginDependencies>true</includePluginDependencies>
               <includeProjectDependencies>false</includeProjectDependencies>
@@ -100,11 +100,11 @@ limitations under the License.
             </goals>
             <configuration>
               <executable>flake8</executable>
-	      <arguments>
-		<!-- TOD: Fix F811 -->
-		<argument>--ignore=F999,E501,E402,F403,F401,F811</argument>
-		<argument>--filename=</argument>
-                <argument>ovirt-engine-ansible</argument>
+              <arguments>
+                <!-- TODO: Fix F811 -->
+                <argument>--ignore=F999,E501,E402,F403,F401,F811</argument>
+                <argument>--filename=</argument>
+                <argument>ovirt-engine-ansible4</argument>
                 <argument>lib</argument>
               </arguments>
             </configuration>

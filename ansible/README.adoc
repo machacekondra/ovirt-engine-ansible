@@ -17,7 +17,7 @@ directory.
 This project is currently in developement phase, so for now you can find
 rpm builds here in releases section. So download appropriate rpm and run:
 
- # yum install -y ovirt-engine-ansible-1.0.0-0.0.a0.el7.centos.x86_64.rpm
+ # yum install -y ovirt-engine-ansible4-1.0.0-0.0.a0.el7.centos.x86_64.rpm
 
 We install modules into the `/usr/share/ansible` directory. But ansible don't search
 for modules by default in this directory. So in order ansible finds your modules you
@@ -34,7 +34,7 @@ http://ovirt-ansible-modules.readthedocs.io/en/latest/_modules/list_of_All_modul
 
 oVirt ansible modules uses oVirt engine API. Every ansible module needs to know connection
 details. The recommended way of using API is to use SSO token, so user don't have to login
-and logout with every executed task. To create SSO token use `ovirt_auth` module:
+and logout with every executed task. To create SSO token use `ov4_auth` module:
 
 [source,yaml]
 ----
@@ -47,10 +47,10 @@ and logout with every executed task. To create SSO token use `ovirt_auth` module
     password: 1234567
     ca_file: ca.pem
 
-  # This task will return ovirt_auth fact, used later for authentication
+  # This task will return ov4_auth fact, used later for authentication
   tasks:
   - name: Obtain SSO token
-    ovirt_auth:
+    ov4_auth:
       url: "{{ url }}"
       username: "{{ username }}"
       password: "{{ password }}"
@@ -61,14 +61,14 @@ with TLS. In an usual oVirt installation it will be in
 `/etc/pki/ovirt-engine/ca.pem`. If you don't specify `ca_file`, then
 system wide CA certificate store will be used.
 
-One you have created a SSO token, you can later use in all tasks. `Os_auth`
-module will create `ovirt_auth` ansible fact.
+One you have created a SSO token, you can later use in all tasks. `ov4_auth`
+module will create `ov4_auth` ansible fact.
 
 [source,yaml]
 ----
 - name: Create vm
-    ovirt_vms:
-      auth: "{{ ovirt_auth }}"
+    ov4_vms:
+      auth: "{{ ov4_auth }}"
       method: add
       parameters:
         vm:
@@ -80,8 +80,8 @@ module will create `ovirt_auth` ansible fact.
     register: add_vm
 
   - name: Create disk
-    ovirt_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_disks:
+      auth: "{{ ov4_auth }}"
       method: add
       parameters:
         disk:
@@ -96,8 +96,8 @@ module will create `ovirt_auth` ansible fact.
     register: add_disk
 
   - name: List disk
-    ovirt_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_disks:
+      auth: "{{ ov4_auth }}"
       method: list
       parameters:
         search: "id={{ add_disk.disk.id }}"
@@ -115,8 +115,8 @@ So in order to attach disk to VM you can reuse the returned JSON as follows:
 [source,yaml]
 ----
 - name: Attach disk to vm
-    ovirt_vm_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_vm_disks:
+      auth: "{{ ov4_auth }}"
       service: "{{ add_vm.vm.href }}"
       method: add
       parameters:
@@ -142,7 +142,7 @@ Clone git project:
 
 Symlink oVirt REST helper module to ansible `module_utils`:
 
-  # ln -s ~/workspace/ovirt-engine-ansible/ansible/lib/ovirt.py /usr/lib/python2.7/site-packages/ansible/module_utils/
+  # ln -s ~/workspace/ovirt-engine-ansible/ansible/lib/ovirt4.py /usr/lib/python2.7/site-packages/ansible/module_utils/
 
 Add generated modules to ansible module path:
 

@@ -1,7 +1,7 @@
 %global tar_version @TAR_VERSION@
 %global debug_package %{nil}
 
-Name: ovirt-engine-ansible
+Name: ovirt-engine-ansible4
 Summary: Ansible modules for oVirt
 Version: @RPM_VERSION@
 Release: @RPM_RELEASE@
@@ -34,14 +34,14 @@ mkdir -p %{buildroot}%{_datadir}/ansible/
 mkdir -p %{buildroot}/%{python2_sitelib}/ansible/module_utils/
 
 # Copy needed files
-cp -a ovirt-engine-ansible/ %{buildroot}%{_datadir}/ansible/
-cp lib/ovirt.py* %{buildroot}/%{python2_sitelib}/ansible/module_utils/
+cp -a ovirt-engine-ansible4/ %{buildroot}%{_datadir}/ansible/
+cp lib/ovirt4.py* %{buildroot}/%{python2_sitelib}/ansible/module_utils/
 
 %files
 %doc README.adoc
 %license LICENSE.txt
-%{_datadir}/ansible/ovirt-engine-ansible/
-%{python2_sitelib}/ansible/module_utils/ovirt.py*
+%{_datadir}/ansible/ovirt-engine-ansible4/
+%{python2_sitelib}/ansible/module_utils/ovirt4.py*
 
 %changelog
 * Mon Jun 27 2016 Ondra Machacek <omachace@redhat.com> - 1.0.0-0

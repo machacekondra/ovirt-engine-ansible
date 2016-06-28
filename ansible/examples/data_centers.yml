@@ -9,7 +9,7 @@
 
   tasks:
   - name: Get datacenter dcx
-    ovirt_data_centers:
+    ov4_data_centers:
       auth: "{{ auth }}"
       method: list
       parameters:
@@ -17,7 +17,7 @@
     register: dcx
 
   - name: Update dc
-    ovirt_data_centers:
+    ov4_data_centers:
       auth: "{{ auth }}"
       service: "{{ dcx.data_center[0].href }}"
       method: update

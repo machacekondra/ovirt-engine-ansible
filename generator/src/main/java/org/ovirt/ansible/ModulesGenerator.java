@@ -311,7 +311,7 @@ public class ModulesGenerator implements PythonGenerator {
         buffer.addLine();
 
         buffer.addLine("from ansible.module_utils.basic import *");
-        buffer.addLine("from ansible.module_utils.ovirt import *");
+        buffer.addLine("from ansible.module_utils.ovirt4 import *");
         buffer.addLine("if __name__ == \"__main__\":");
         buffer.startBlock();
         buffer.addLine("main()");
@@ -491,14 +491,14 @@ public class ModulesGenerator implements PythonGenerator {
     }
 
     /**
-     * We prefix all oVirt modules with 'ovirt' prefix.
+     * We prefix all oVirt modules with 'ov4' prefix.
      *
      * @param service service from which module is generated
      * @return prefixed name of the module
      */
     private String getModuleName(Service service) {
         return String.format(
-            "ovirt_%s",
+            "ov4_%s",
             pythonNames.getMemberStyleName(service.getName())
         );
     }

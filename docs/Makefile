@@ -56,7 +56,7 @@ html: modules
 
 modules: $(FORMATTER) _formatter/templates/rst.j2
 	mkdir -p _modules
-	PYTHONPATH=../ansible/ovirt-engine-ansible $(FORMATTER) -t rst --template-dir=_formatter/templates --module-dir=../ansible/ovirt-engine-ansible -o _modules
+	PYTHONPATH=../ansible/ovirt-engine-ansible4 $(FORMATTER) -t rst --template-dir=_formatter/templates --module-dir=../ansible/ovirt-engine-ansible4 -o _modules
 
 .PHONY: dirhtml
 dirhtml:

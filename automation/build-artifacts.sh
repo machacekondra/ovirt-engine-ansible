@@ -33,7 +33,7 @@ version="$(python ansible/lib/version.py)"
 mvn package -s "${settings}"
 
 # Generate the .tar.gz file containing generated ansible modules
-tar_name="ovirt-engine-ansible"
+tar_name="ovirt-engine-ansible4"
 tar_prefix="${tar_name}-${version}"
 tar_file="${PWD}/${tar_prefix}.tar.gz"
 tar -czf "${tar_file}" -C ansible .

@@ -6,17 +6,17 @@
     username: admin@internal
     password: 1234567
 
-  # This task will return ovirt_auth fact, used later for authentication
+  # This task will return ov4_auth fact, used later for authentication
   tasks:
   - name: Obtain SSO token
-    ovirt_auth:
+    ov4_auth:
       url: "{{ url }}"
       username: "{{ username }}"
       password: "{{ password }}"
 
   - name: Create vm
-    ovirt_vms:
-      auth: "{{ ovirt_auth }}"
+    ov4_vms:
+      auth: "{{ ov4_auth }}"
       method: add
       parameters:
         vm:
@@ -28,8 +28,8 @@
     register: add_vm
 
   - name: Create disk
-    ovirt_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_disks:
+      auth: "{{ ov4_auth }}"
       method: add
       parameters:
         disk:
@@ -44,8 +44,8 @@
     register: add_disk
 
   - name: List disk
-    ovirt_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_disks:
+      auth: "{{ ov4_auth }}"
       method: list
       parameters:
         search: "id={{ add_disk.disk.id }}"
@@ -56,8 +56,8 @@
     when:  not add_disk|skipped and add_disk.error is undefined
 
   - name: Attach disk to vm
-    ovirt_vm_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_vm_disks:
+      auth: "{{ ov4_auth }}"
       service: "{{ add_vm.vm.href }}"
       method: add
       parameters:
@@ -67,8 +67,8 @@
     register: attach
 
   - name: Activate vm disk
-    ovirt_vm_disks:
-      auth: "{{ ovirt_auth }}"
+    ov4_vm_disks:
+      auth: "{{ ov4_auth }}"
       service: "{{ attach.disk.href }}"
       method: activate
 
@@ -76,8 +76,8 @@
     register: activate_disk
 
   - name: Start vm
-    ovirt_vms:
-      auth: "{{ ovirt_auth }}"
+    ov4_vms:
+      auth: "{{ ov4_auth }}"
       service: "{{ add_vm.vm.href }}"
       method: start
     when: not activate_disk|skipped and activate_disk.error is undefined

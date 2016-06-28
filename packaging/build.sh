@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 tar_version="${tar_version:=1.0.0}"
-tar_url="${tar_url:ovirt-engine-ansible-${tar_version}.tar.gz}"
+tar_url="${tar_url:ovirt-engine-ansible4-${tar_version}.tar.gz}"
 rpm_version="${rpm_version:=1.0.0}"
 rpm_dist="${rpm_dist:=$(rpm --eval '%dist')}"
 rpm_release="${rpm_release:=0.0.a0${rpm_dist}}"
