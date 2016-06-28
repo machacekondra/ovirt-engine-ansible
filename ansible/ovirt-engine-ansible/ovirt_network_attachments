@@ -1,0 +1,157 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#
+# Copyright (c) 2016 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+DOCUMENTATION = '''
+---
+module: ovirt_network_attachments
+short_description: ovirt_network_attachments module to manage network-attachments in oVirt
+author: "Ondra Machacek (@machacekondra)"
+version_added: 2.0
+description:
+    - "This modules is used to manage oVirt network-attachments."
+options:
+    method:
+        required: True
+        description:
+            - "Action to be run on network-attachments."
+        choices:
+            - add
+            - list
+            - get
+            - update
+            - remove
+    auth:
+        required: True
+        description:
+            - "Dictionary with values needed to create HTTP connection to oVirt:"
+            - "** C(username)[I(required)] - The name of the user, something like `I(admin@internal)`."
+            - "** C(password)[I(required)] - The password of the user."
+            - "** C(url)[I(required)] - A string containing the base URL of the server, usually
+            something like `I(https://server.example.com/ovirt-engine/api)`."
+            - "** C(sso_token) - SSO token to be used instead of login with username/password."
+            - "** C(insecure) - A boolean flag that indicates if the server TLS
+            certificate and host name should be checked."
+            - "** C(ca_file) - A PEM file containing the trusted CA certificates. The
+            certificate presented by the server will be verified using these CA
+            certificates. If `C(ca_file)` parameter is not set, system wide
+            CA certificate store is used."
+    service:
+        required: false
+        description:
+            - "URL path of the service we want to work with, usually something like I(/vms/123/disks/456)."
+    parameters:
+        required: false
+        description:
+            - "Dictionary which specify additional parameters to be send with request."
+            - " C(add) parameters:"
+            - "** I(attachment)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/attachment)."
+            - " C(list) parameters:"
+            - "** I(max)[integer] - Sets the maximum number of attachments to return. If not specified all the attachments are returned."
+            - " C(update) parameters:"
+            - "** I(attachment)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/attachment)."
+            - "** I(async)[boolean] - Indicates if the update should be performed asynchronously."
+            - " C(remove) parameters:"
+            - "** I(async)[boolean] - Indicates if the remove should be performed asynchronously."
+'''
+
+
+RETURN = '''
+'''
+
+
+import sys
+import json
+
+
+def add(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/attachments' % path)
+    request.body = json.dumps(kwargs.pop('attachment'))
+    response = connection.send(request)
+    if response.code in [201, 202]:
+        return {'changed': True, 'attachment': response.body}
+    return {'changed': False, 'error': response.body}
+
+
+def get(connection, path, **kwargs):
+    request = Request(method='GET', path='%s' % path, query=kwargs)
+    response = connection.send(request)
+    return {'changed': False, 'attachment': response.body['attachment']}
+
+
+def list(connection, path, **kwargs):
+    request = Request(method='GET', path='%s/attachments' % path, query=kwargs)
+    response = connection.send(request)
+    if 'attachment' in response.body:
+        return {'changed': False, 'attachment': response.body['attachment']}
+    return {'changed': False, 'error': response.body}
+
+
+def remove(connection, path, **kwargs):
+    request = Request(method='DELETE', path='%s' % path, query=kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def update(connection, path, **kwargs):
+    request = Request(method='PUT', path='%s' % path)
+    request.body = json.dumps(kwargs.pop('attachment'))
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True, 'attachment': response.body}
+    return {'changed': False, 'error': response.body}
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec=dict(
+            method=dict(required=True, choices=['add', 'list', 'get', 'update', 'remove']),
+            auth=dict(required=True, type='dict'),
+            service=dict(required=False, type='str', default=''),
+            parameters=dict(required=False, type='dict', default=dict()),
+        )
+    )
+
+    auth = module.params.pop('auth')
+    connection = Connection(
+        url=auth.get('url'),
+        username=auth.get('username'),
+        password=auth.get('password'),
+        ca_file=auth.get('ca_file', None),
+        insecure=auth.get('insecure', False),
+        sso_token=auth.get('sso_token', None),
+    )
+
+    try:
+        method = module.params.pop('method')
+        ret = getattr(sys.modules[__name__], method)(connection, module.params['service'], **module.params.pop('parameters'))
+        module.exit_json(**ret)
+    except Error as e:
+        module.fail_json(msg="Error: %s" % e)
+    finally:
+        if auth.get('sso_token', None) is None:
+            connection.close()
+
+
+from ansible.module_utils.basic import *
+from ansible.module_utils.ovirt import *
+if __name__ == "__main__":
+    main()

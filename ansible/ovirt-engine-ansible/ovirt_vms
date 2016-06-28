@@ -1,0 +1,409 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#
+# Copyright (c) 2016 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+DOCUMENTATION = '''
+---
+module: ovirt_vms
+short_description: ovirt_vms module to manage vms in oVirt
+author: "Ondra Machacek (@machacekondra)"
+version_added: 2.0
+description:
+    - "This modules is used to manage oVirt vms."
+options:
+    method:
+        required: True
+        description:
+            - "Action to be run on vms."
+        choices:
+            - add
+            - list
+            - cancel_migration
+            - commit_snapshot
+            - clone
+            - detach
+            - export
+            - freeze_filesystems
+            - get
+            - logon
+            - maintenance
+            - migrate
+            - preview_snapshot
+            - update
+            - reboot
+            - remove
+            - reorder_mac_addresses
+            - shutdown
+            - start
+            - stop
+            - suspend
+            - thaw_filesystems
+            - ticket
+            - undo_snapshot
+    auth:
+        required: True
+        description:
+            - "Dictionary with values needed to create HTTP connection to oVirt:"
+            - "** C(username)[I(required)] - The name of the user, something like `I(admin@internal)`."
+            - "** C(password)[I(required)] - The password of the user."
+            - "** C(url)[I(required)] - A string containing the base URL of the server, usually
+            something like `I(https://server.example.com/ovirt-engine/api)`."
+            - "** C(sso_token) - SSO token to be used instead of login with username/password."
+            - "** C(insecure) - A boolean flag that indicates if the server TLS
+            certificate and host name should be checked."
+            - "** C(ca_file) - A PEM file containing the trusted CA certificates. The
+            certificate presented by the server will be verified using these CA
+            certificates. If `C(ca_file)` parameter is not set, system wide
+            CA certificate store is used."
+    service:
+        required: false
+        description:
+            - "URL path of the service we want to work with, usually something like I(/vms/123/disks/456)."
+    parameters:
+        required: false
+        description:
+            - "Dictionary which specify additional parameters to be send with request."
+            - " C(add) parameters:"
+            - "** I(vm)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/vm)."
+            - " C(list) parameters:"
+            - "** I(search)[string] - A query string used to restrict the returned virtual machines."
+            - "** I(max)[integer] - The maximum number of results to return."
+            - "** I(case_sensitive)[boolean] - "
+            - "** I(filter)[boolean] - Indicates if the results should be filtered according to the permissions of the user."
+            - " C(cancel_migration) parameters:"
+            - "** I(async)[boolean] - Indicates if the migration should cancelled asynchronously."
+            - " C(commit_snapshot) parameters:"
+            - "** I(async)[boolean] - Indicates if the snapshots should be committed asynchronously."
+            - " C(clone) parameters:"
+            - "** I(vm)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/vm)."
+            - "** I(async)[boolean] - Indicates if the clone should be performed asynchronously."
+            - " C(detach) parameters:"
+            - "** I(async)[boolean] - Indicates if the detach should be performed asynchronously."
+            - " C(export) parameters:"
+            - "** I(discard_snapshots)[boolean] - "
+            - "** I(exclusive)[boolean] - "
+            - "** I(storage_domain)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/storage-domain)."
+            - "** I(async)[boolean] - Indicates if the export should be performed asynchronously."
+            - " C(freeze_filesystems) parameters:"
+            - "** I(async)[boolean] - Indicates if the freeze should be performed asynchronously."
+            - " C(get) parameters:"
+            - "** I(next_run)[boolean] - "
+            - "** I(filter)[boolean] - Indicates if the results should be filtered according to the permissions of the user."
+            - " C(logon) parameters:"
+            - "** I(async)[boolean] - Indicates if the logon should be performed asynchronously."
+            - " C(maintenance) parameters:"
+            - "** I(maintenance_enabled)[boolean] - "
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - " C(migrate) parameters:"
+            - "** I(cluster)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/cluster)."
+            - "** I(force)[boolean] - "
+            - "** I(host)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/host)."
+            - "** I(async)[boolean] - Indicates if the migration should be performed asynchronously."
+            - " C(preview_snapshot) parameters:"
+            - "** I(disks)[null] - "
+            - "** I(restore_memory)[boolean] - "
+            - "** I(snapshot)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/snapshot)."
+            - "** I(vm)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/vm)."
+            - "** I(async)[boolean] - Indicates if the preview should be performed asynchronously."
+            - " C(update) parameters:"
+            - "** I(vm)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/vm)."
+            - "** I(async)[boolean] - Indicates if the update should be performed asynchronously."
+            - " C(reboot) parameters:"
+            - "** I(async)[boolean] - Indicates if the reboot should be performed asynchronously."
+            - " C(remove) parameters:"
+            - "** I(async)[boolean] - Indicates if the remove should be performed asynchronously."
+            - " C(reorder_mac_addresses) parameters:"
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - " C(shutdown) parameters:"
+            - "** I(async)[boolean] - Indicates if the shutdown should be performed asynchronously."
+            - " C(start) parameters:"
+            - "** I(pause)[boolean] - "
+            - "** I(vm)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/vm)."
+            - "** I(use_cloud_init)[boolean] - "
+            - "** I(use_sysprep)[boolean] - "
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - "** I(filter)[boolean] - Indicates if the results should be filtered according to the permissions of the user."
+            - " C(stop) parameters:"
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - " C(suspend) parameters:"
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - " C(thaw_filesystems) parameters:"
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+            - " C(ticket) parameters:"
+            - "** I(ticket)[dict] - U(https://jhernand.fedorapeople.org/ovirt-api-explorer/#/types/ticket)."
+            - "** I(async)[boolean] - Indicates if the generation of the ticket should be performed asynchronously."
+            - " C(undo_snapshot) parameters:"
+            - "** I(async)[boolean] - Indicates if the action should be performed asynchronously."
+'''
+
+
+RETURN = '''
+'''
+
+
+import sys
+import json
+
+
+def add(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/vms' % path)
+    request.body = json.dumps(kwargs.pop('vm'))
+    response = connection.send(request)
+    if response.code in [201, 202]:
+        return {'changed': True, 'vm': response.body}
+    return {'changed': False, 'error': response.body}
+
+
+def cancel_migration(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/cancel_migration' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def clone(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/clone' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def commit_snapshot(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/commit_snapshot' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def detach(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/detach' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def export(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/export' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def freeze_filesystems(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/freeze_filesystems' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def get(connection, path, **kwargs):
+    request = Request(method='GET', path='%s' % path, query=kwargs)
+    response = connection.send(request)
+    return {'changed': False, 'vm': response.body['vm']}
+
+
+def list(connection, path, **kwargs):
+    request = Request(method='GET', path='%s/vms' % path, query=kwargs)
+    response = connection.send(request)
+    if 'vm' in response.body:
+        return {'changed': False, 'vm': response.body['vm']}
+    return {'changed': False, 'error': response.body}
+
+
+def logon(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/logon' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def maintenance(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/maintenance' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def migrate(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/migrate' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def preview_snapshot(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/preview_snapshot' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def reboot(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/reboot' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def remove(connection, path, **kwargs):
+    request = Request(method='DELETE', path='%s' % path, query=kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def reorder_mac_addresses(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/reorder_mac_addresses' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def shutdown(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/shutdown' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def start(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/start' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def stop(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/stop' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def suspend(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/suspend' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def thaw_filesystems(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/thaw_filesystems' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def ticket(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/ticket' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def undo_snapshot(connection, path, **kwargs):
+    request = Request(method='POST', path='%s/undo_snapshot' % path)
+    request.body = json.dumps(kwargs)
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True}
+    return {'changed': False, 'error': response.body}
+
+
+def update(connection, path, **kwargs):
+    request = Request(method='PUT', path='%s' % path)
+    request.body = json.dumps(kwargs.pop('vm'))
+    response = connection.send(request)
+    if response.code in [200]:
+        return {'changed': True, 'vm': response.body}
+    return {'changed': False, 'error': response.body}
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec=dict(
+            method=dict(required=True, choices=['add', 'list', 'cancel_migration', 'commit_snapshot', 'clone', 'detach', 'export', 'freeze_filesystems', 'get', 'logon', 'maintenance', 'migrate', 'preview_snapshot', 'update', 'reboot', 'remove', 'reorder_mac_addresses', 'shutdown', 'start', 'stop', 'suspend', 'thaw_filesystems', 'ticket', 'undo_snapshot']),
+            auth=dict(required=True, type='dict'),
+            service=dict(required=False, type='str', default=''),
+            parameters=dict(required=False, type='dict', default=dict()),
+        )
+    )
+
+    auth = module.params.pop('auth')
+    connection = Connection(
+        url=auth.get('url'),
+        username=auth.get('username'),
+        password=auth.get('password'),
+        ca_file=auth.get('ca_file', None),
+        insecure=auth.get('insecure', False),
+        sso_token=auth.get('sso_token', None),
+    )
+
+    try:
+        method = module.params.pop('method')
+        ret = getattr(sys.modules[__name__], method)(connection, module.params['service'], **module.params.pop('parameters'))
+        module.exit_json(**ret)
+    except Error as e:
+        module.fail_json(msg="Error: %s" % e)
+    finally:
+        if auth.get('sso_token', None) is None:
+            connection.close()
+
+
+from ansible.module_utils.basic import *
+from ansible.module_utils.ovirt import *
+if __name__ == "__main__":
+    main()
