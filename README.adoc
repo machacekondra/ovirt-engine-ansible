@@ -1,5 +1,8 @@
 = oVirt Ansible
 
+== IMPORTANT
+This project has been abandoned.
+
 == Introduction
 
 The oVirt Ansible is a Python package that simplifies automation of oVirt.
